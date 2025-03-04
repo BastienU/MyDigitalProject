@@ -4,30 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oh my tag !</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-    <h1>
-        Take your picture
-    </h1>
-    <br>
-    <p>Click on the following button to take your picture</p>
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="wishlist.html">Wishlist</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+  
+  <h1>Oh My Tag !</h1>
+
+  <h2>
+      Vous souhaitez voir la disponibilité d'un produit, sa composition, son prix, ou créer une wishlist avec ce produit ?
+  </h2>
+
+  <div class="photo">
+    <p>Cliquez sur le bouton pour ouvrir l'appareil photo</p>
+    
     <input
       type="file"
       id="environment"
       capture="environment"
       accept="photo/*"
     >
-    <br><br>
+  </div>
+  
+  <!-- #region Ouvrir l'appareil photo côté utilisateur -->
+  <!-- <p>Or click on this button to take a selfie</p>
+  
+  <label for="user">Capture user:</label>
+  
+  <br>
+  
+  <input
+    type="file"
+    id="user"
+    capture="user"
+    accept="image/*"
+  > -->
 
-    <p>Or click on this button to take a selfie</p>
-    <label for="user">Capture user:</label>
-    <br>
-    <input
-      type="file"
-      id="user"
-      capture="user"
-      accept="image/*"
-    >
+  <!-- #endregion -->
 </body>
 </html>
