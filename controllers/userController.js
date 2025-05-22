@@ -1,4 +1,6 @@
 const prisma = require('../prismaClient');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 // GET all users
 const getAllUsers = async (req, res) => {
@@ -16,12 +18,15 @@ const createUser = async (req, res) => {
   try {
     const { username, genre, email, password, role, termsAccepted } = req.body;
 
+    // Hash du mot de passe avant sauvegarde
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const newUser = await prisma.user.create({
       data: {
         username,
         genre,
         email,
-        password,
+        password: hashedPassword,
         role,
         termsAccepted,
       },
@@ -41,16 +46,24 @@ const updateUser = async (req, res) => {
   const { username, genre, email, password, role, termsAccepted } = req.body;
 
   try {
+    // Préparer l'objet data à mettre à jour
+    let dataToUpdate = {
+      username,
+      genre,
+      email,
+      role,
+      termsAccepted,
+    };
+
+    // Si password est fourni, le hasher
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      dataToUpdate.password = hashedPassword;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(id) },
-      data: {
-        username,
-        genre,
-        email,
-        password,
-        role,
-        termsAccepted,
-      },
+      data: dataToUpdate,
     });
 
     res.status(200).json(updatedUser);
@@ -69,6 +82,7 @@ const deleteUser = async (req, res) => {
     });
 
     res.status(204).send();
+    console.log("User ", id, " successfully deleted");
   } catch (err) {
     console.error("Erreur suppression utilisateur :", err);
     res.status(500).json({ error: 'Erreur suppression utilisateur' });
