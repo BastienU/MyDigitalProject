@@ -84,8 +84,8 @@ const deleteUser = async (req, res) => {
     res.status(204).send();
     console.log("User ", id, " successfully deleted");
   } catch (err) {
-    console.error("Erreur suppression utilisateur :", err);
-    res.status(500).json({ error: 'Erreur suppression utilisateur' });
+    console.error("Error deleting user :", err);
+    res.status(500).json({ error: 'Error deleting user' });
   }
 };
 

@@ -18,3 +18,15 @@ model User {
   role           String
   termsAccepted   Boolean
 }
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  created     DateTime @default(now())
+  modified    DateTime @updatedAt
+  name        String
+  price       Float
+  description String?
+  composition String?
+  image       String?
+  code        String   @unique
+}
