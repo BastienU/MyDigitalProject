@@ -8,23 +8,23 @@ const getAllUsers = async (req, res) => {
     const users = await prisma.user.findMany();
     res.json(users);
   } catch (err) {
-    console.error("Erreur serveur :", err);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error("Server error :", err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 // CREATE a user
 const createUser = async (req, res) => {
   try {
-    const { username, genre, email, password, role, termsAccepted } = req.body;
+    const { genre, name, firstname, email, password, role, termsAccepted } = req.body;
 
-    // Hash du mot de passe avant sauvegarde
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await prisma.user.create({
       data: {
-        username,
         genre,
+        name,
+        firstname,
         email,
         password: hashedPassword,
         role,
@@ -43,19 +43,18 @@ const createUser = async (req, res) => {
 // UPDATE a user
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { username, genre, email, password, role, termsAccepted } = req.body;
+  const { genre, name, firstname, email, password, role, termsAccepted } = req.body;
 
   try {
-    // Préparer l'objet data à mettre à jour
     let dataToUpdate = {
-      username,
       genre,
+      name,
+      firstname,
       email,
       role,
       termsAccepted,
     };
 
-    // Si password est fourni, le hasher
     if (password) {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       dataToUpdate.password = hashedPassword;
@@ -68,8 +67,7 @@ const updateUser = async (req, res) => {
 
     res.status(200).json(updatedUser);
   } catch (err) {
-    console.error('Erreur mise à jour utilisateur :', err);
-    res.status(500).json({ error: 'Erreur mise à jour utilisateur' });
+    res.status(500).json({ error: 'Error during user update' });
   }
 };
 
@@ -84,7 +82,6 @@ const deleteUser = async (req, res) => {
     res.status(204).send();
     console.log("User ", id, " successfully deleted");
   } catch (err) {
-    console.error("Error deleting user :", err);
     res.status(500).json({ error: 'Error deleting user' });
   }
 };

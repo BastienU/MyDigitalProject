@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  created        DateTime @default(now())
-  modified       DateTime @updatedAt
-  username       String
-  genre          String
-  email          String   @unique
-  password       String
-  role           String
-  termsAccepted   Boolean
+  id            Int      @id @default(autoincrement())
+  created       DateTime @default(now())
+  modified      DateTime @updatedAt
+  name          String
+  firstname     String
+  genre         String
+  email         String   @unique
+  password      String
+  role          String
+  termsAccepted Boolean
 }
 
 model Product {

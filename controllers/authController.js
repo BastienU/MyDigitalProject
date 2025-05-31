@@ -3,13 +3,13 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 
-// Signup (Inscription)
+// Signup
 const signup = async (req, res) => {
-  const { username, email, password, genre, role, termsAccepted } = req.body;
+  const { genre, name, firstname, email, password, role, termsAccepted } = req.body;
   const allowedRoles = ['user', 'retailer'];
 
   try {
-    // Vérifier si l’email existe déjà
+    // Try if the email is already used
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already used' });
@@ -23,23 +23,24 @@ const signup = async (req, res) => {
 
     const newUser = await prisma.user.create({
       data: {
-        username,
+        genre,
+        name,
+        firstname,
         email,
         password: hashedPassword,
-        genre,
         role,
         termsAccepted,
       },
     });
 
-    res.status(201).json({ message: 'User\'s inscription succeed', user: newUser });
+    res.status(201).json({ message: "User's inscription succeeded", user: newUser });
+
   } catch (err) {
-    console.error('Inscription error :', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 };
 
-// Login (Connexion)
+// Login
 const login = async (req, res) => {
   const { email, password } = req.body;
 

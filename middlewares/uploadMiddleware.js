@@ -7,7 +7,7 @@ const storage = multer.memoryStorage();
 // Define file filter
 const fileFilter = (req, file, cb) => {
   if (path.extname(file.originalname) !== '.csv') {
-    return cb(new Error('Seuls les fichiers CSV sont autorisés.'), false);
+    return cb(new Error('Only CSV files are allowed.'), false);
   }
   cb(null, true);
 };
