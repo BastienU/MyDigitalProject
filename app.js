@@ -16,7 +16,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
-app.use((next) => {
+app.use((req, res, next) => {
+  console.log('🔍 Requête reçue depuis:', req.headers.origin);
   next();
 });
 
