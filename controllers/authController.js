@@ -2,66 +2,82 @@ const prisma = require('../prismaClient');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
+
+
+// Schémas de validation
+const signupSchema = Joi.object({
+  genre: Joi.string().valid('H', 'F', 'Autre').required(),
+  name: Joi.string().min(2).required(),
+  firstname: Joi.string().min(2).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required(),
+  role: Joi.string().valid('user', 'retailer').required(),
+  termsAccepted: Joi.boolean().valid(true).required(),
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required(),
+});
 
 // Signup
 const signup = async (req, res) => {
-  const { genre, name, firstname, email, password, role, termsAccepted } = req.body;
-  const allowedRoles = ['user', 'retailer'];
+  const { error, value } = signupSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: `Format invalide : ${error.details[0].message}` });
+  }
 
   try {
-    // Try if the email is already used
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({ where: { email: value.email } });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already used' });
+      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
     }
 
-    if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ error: "Invalid role. Role must be 'user' or 'retailer'." });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(value.password, saltRounds);
 
     const newUser = await prisma.user.create({
-      data: {
-        genre,
-        name,
-        firstname,
-        email,
-        password: hashedPassword,
-        role,
-        termsAccepted,
-      },
+      data: { ...value, password: hashedPassword },
     });
 
-    res.status(201).json({ message: "User's inscription succeeded", user: newUser });
+    res.status(201).json({ message: "Inscription réussie", user: newUser });
 
   } catch (err) {
-    res.status(500).json({ error: 'Server error', details: err.message });
+    console.error("Erreur lors de l'inscription :", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 };
 
+
 // Login
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { error, value } = loginSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: `Format invalide : ${error.details[0].message}` });
+  }
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = await prisma.user.findUnique({ where: { email: value.email } });
+    if (!user) {
+      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Incorrect password' });
+    const isMatch = await bcrypt.compare(value.password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
+    }
 
-    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({ message: 'Connexion succeed', token });
+    res.status(200).json({ message: 'Connexion réussie', token });
+
   } catch (err) {
-    console.error('Login error :', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Erreur de connexion:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 

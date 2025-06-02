@@ -1,6 +1,44 @@
 const prisma = require('../prismaClient');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const Joi = require('joi');
+
+const userSchema = Joi.object({
+  genre: Joi.string().valid('H', 'F', 'Autre').required(),
+  name: Joi.string().min(2).required(),
+  firstname: Joi.string().min(2).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required(),
+  role: Joi.string().valid('user', 'retailer').required(),
+  termsAccepted: Joi.boolean().required(),
+});
+
+// CREATE a user with validation
+const createUser = async (req, res) => {
+  try {
+    const { error, value } = userSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: `Invalid input: ${error.details[0].message}` });
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: value.email } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(value.password, saltRounds);
+
+    const newUser = await prisma.user.create({
+      data: { ...value, password: hashedPassword },
+    });
+
+    res.status(201).json({ message: "Inscription réussie", user: newUser });
+
+  } catch (err) {
+    console.error("Erreur lors de la création de l'utilisateur:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
 
 // GET all users
 const getAllUsers = async (req, res) => {
@@ -10,33 +48,6 @@ const getAllUsers = async (req, res) => {
   } catch (err) {
     console.error("Server error :", err);
     res.status(500).json({ error: 'Server error' });
-  }
-};
-
-// CREATE a user
-const createUser = async (req, res) => {
-  try {
-    const { genre, name, firstname, email, password, role, termsAccepted } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const newUser = await prisma.user.create({
-      data: {
-        genre,
-        name,
-        firstname,
-        email,
-        password: hashedPassword,
-        role,
-        termsAccepted,
-      },
-    });
-
-    console.log("User created:", newUser);
-    res.status(201).json(newUser);
-  } catch (err) {
-    console.error("Error creating user:", err);
-    res.status(500).json({ error: 'Error creating user' });
   }
 };
 
