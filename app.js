@@ -4,6 +4,7 @@ const userRoutes = require('./routes/userRoute');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoute');
 const productRoutes = require('./routes/productRoute');
+const wishlistRoutes = require('./routes/wishlistRoute');
 const corsMiddleware = require('./middlewares/corsMiddleware');
 
 
@@ -15,9 +16,10 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 app.use((req, res, next) => {
-  console.log('🔍 Requête reçue depuis:', req.headers.origin);
+  console.log('Requête reçue depuis :', req.headers.origin);
   next();
 });
 

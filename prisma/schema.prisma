@@ -18,6 +18,7 @@ model User {
   password      String
   role          String
   termsAccepted Boolean
+  wishlists Wishlist[]
 }
 
 model Product {
@@ -30,4 +31,27 @@ model Product {
   composition String?
   image       String?
   code        String   @unique
+  wishlists WishlistProduct[]
+}
+
+model Wishlist {
+  id        Int               @id @default(autoincrement())
+  created   DateTime          @default(now())
+  modified  DateTime          @updatedAt
+  name      String
+  user      User              @relation(fields: [userId], references: [id])
+  userId    Int
+  products  WishlistProduct[]
+}
+
+
+model WishlistProduct {
+  id         Int       @id @default(autoincrement())
+  created    DateTime  @default(now())
+  wishlist   Wishlist  @relation(fields: [wishlistId], references: [id])
+  wishlistId Int
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  Int
+
+  @@unique([wishlistId, productId], name: "wishlistId_productId")
 }

@@ -25,13 +25,13 @@ const loginSchema = Joi.object({
 const signup = async (req, res) => {
   const { error, value } = signupSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ error: `Format invalide : ${error.details[0].message}` });
+    return res.status(400).json({ error: `Invalid format : ${error.details[0].message}` });
   }
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email: value.email } });
     if (existingUser) {
-      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+      return res.status(400).json({ error: 'This email is already used.' });
     }
 
     const hashedPassword = await bcrypt.hash(value.password, saltRounds);
@@ -40,11 +40,11 @@ const signup = async (req, res) => {
       data: { ...value, password: hashedPassword },
     });
 
-    res.status(201).json({ message: "Inscription réussie", user: newUser });
+    res.status(201).json({ message: "Inscription succeeded", user: newUser });
 
   } catch (err) {
-    console.error("Erreur lors de l'inscription :", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("Error during user's inscription :", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -53,18 +53,18 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   const { error, value } = loginSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ error: `Format invalide : ${error.details[0].message}` });
+    return res.status(400).json({ error: `Invalid format : ${error.details[0].message}` });
   }
 
   try {
     const user = await prisma.user.findUnique({ where: { email: value.email } });
     if (!user) {
-      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
+      return res.status(401).json({ error: "Incorrect email or password" });
     }
 
     const isMatch = await bcrypt.compare(value.password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
+      return res.status(401).json({ error: "Incorrect email or password" });
     }
 
     const token = jwt.sign(
@@ -73,11 +73,11 @@ const login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({ message: 'Connexion réussie', token });
+    res.status(200).json({ message: 'Connection succeeded', token });
 
   } catch (err) {
-    console.error('Erreur de connexion:', err);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('Connection error :', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

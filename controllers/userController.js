@@ -23,7 +23,7 @@ const createUser = async (req, res) => {
 
     const existingUser = await prisma.user.findUnique({ where: { email: value.email } });
     if (existingUser) {
-      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+      return res.status(400).json({ error: 'This email is already used.' });
     }
 
     const hashedPassword = await bcrypt.hash(value.password, saltRounds);
@@ -32,11 +32,11 @@ const createUser = async (req, res) => {
       data: { ...value, password: hashedPassword },
     });
 
-    res.status(201).json({ message: "Inscription réussie", user: newUser });
+    res.status(201).json({ message: "Inscription succeeded", user: newUser });
 
   } catch (err) {
-    console.error("Erreur lors de la création de l'utilisateur:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("Error during user's creation :", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
