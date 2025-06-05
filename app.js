@@ -43,6 +43,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/proxy', async (req, res) => {
+    const imageUrl = req.query.url;
+    if (!imageUrl) return res.status(400).send("URL manquante !");
+  
+    try {
+        const response = await fetch(imageUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
+        if (!response.ok) return res.status(response.status).send("Erreur lors du chargement !");
+        
+        response.body.pipe(res);
+    } catch (error) {
+        res.status(500).send("Erreur serveur !");
+    }
+});
+
 
 
 app.get('/', async (req, res) => {
