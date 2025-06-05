@@ -13,4 +13,4 @@ router.delete('/:wishlistId', wishlistController.deleteWishlist);
 router.post('/:wishlistId/add/:productId', wishlistController.addProductToWishlist);
 router.delete('/:wishlistId/remove/:productId', wishlistController.removeProductFromWishlist);
 
-module.exports = router;
+module.exports = router; 
