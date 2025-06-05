@@ -51,8 +51,36 @@ const getAllProductsFromWishlist = async (req, res) => {
   }
 };
 
+const getAllWishlistsForAUser = async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: "Utilisateur non authentifié" });
+  }
 
-// CREATE a wishlist
+  try {
+    const userId = req.user.id;
+
+    const wishlists = await prisma.wishlist.findMany({
+      where: { userId: userId },
+      include: { user: true }
+    });
+
+    if (wishlists.length === 0) {
+      const defaultWishlist = await prisma.wishlist.create({
+        data: { name: "Default", userId: userId }
+      });
+
+      return res.status(200).json([defaultWishlist]);
+    }
+
+    res.status(200).json(wishlists);
+  } catch (err) {
+    console.error('Erreur lors de la récupération des wishlists:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
+
+// create a wishlist
 const createWishlist = async (req, res) => {
   try {
     const { error, value } = wishlistSchema.validate(req.body);
@@ -120,7 +148,7 @@ const updateWishlist = async (req, res) => {
   }
 };
 
-// DELETE a wishlist
+// delete a wishlist
 const deleteWishlist = async (req, res) => {
   const { wishlistId } = req.params;
 
@@ -237,6 +265,7 @@ const removeProductFromWishlist = async (req, res) => {
 module.exports = {
   getAllWishlists,
   getAllProductsFromWishlist,
+  getAllWishlistsForAUser,
   createWishlist,
   updateWishlist,
   deleteWishlist,
